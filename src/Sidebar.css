@@ -1,0 +1,32 @@
+/* src/Sidebar.css */
+
+.sidebar {
+    width: 200px;
+    height: 100vh;
+    background-color: #f4f4f4;
+    padding: 1rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+  }
+  
+  .sidebar nav ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .sidebar nav ul li {
+    margin-bottom: 1rem;
+  }
+  
+  .sidebar nav ul li a {
+    text-decoration: none;
+    color: #333;
+    font-size: 1.2rem;
+  }
+  
+  .content {
+    margin-left: 220px; /* Space for sidebar */
+    padding: 2rem;
+  }
+  
