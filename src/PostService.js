@@ -64,17 +64,25 @@ export const deletePost = async (id) => {
   return data;
 };
 
-// Function to upvote a post
+// Upvote post
 export const upvotePost = async (id) => {
   try {
+    // Fetch current upvote count
+    let { data: post, error: fetchError } = await supabase
+      .from('post')
+      .select('upvotes')
+      .eq('id', id)
+      .single();
+
+    if (fetchError) throw new Error(fetchError.message);
+
+    // Increment upvote count
     const { data, error } = await supabase
-      .from('post') // Ensure the correct table name
-      .update({ upvotes: supabase.increment(1) }) // Increment the upvotes by 1
+      .from('post')
+      .update({ upvotes: post.upvotes + 1 })
       .eq('id', id);
 
-    if (error) {
-      throw new Error(error.message);
-    }
+    if (error) throw new Error(error.message);
 
     return data;
   } catch (error) {
@@ -82,3 +90,33 @@ export const upvotePost = async (id) => {
     throw error;
   }
 };
+
+// Fetch comments for a specific post
+export const fetchComments = async (postId) => {
+  try {
+    const { data, error } = await supabase
+      .from('comments') // Ensure the table name matches what you created
+      .select('*')
+      .eq('post_id', postId); // Get comments for this post
+    if (error) throw new Error(error.message);
+    return data;
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    throw error;
+  }
+};
+
+// Add a comment to a specific post
+export const addComment = async (postId, content) => {
+  try {
+    const { data, error } = await supabase
+      .from('comments') // Ensure this matches your table
+      .insert([{ post_id: postId, content }]); // Insert new comment
+    if (error) throw new Error(error.message);
+    return data;
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    throw error;
+  }
+};
+
