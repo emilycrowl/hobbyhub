@@ -1,31 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { fetchPosts } from './PostService';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { fetchPosts } from "./PostService";
+import { Link } from "react-router-dom";
 
 const HomePage = () => {
-  const [posts, setPosts] = useState([]); // Initialize posts as an empty array
-  const [searchQuery, setSearchQuery] = useState(''); // State for search input
-  const [sortOption, setSortOption] = useState('created_at'); // Default sort by created_at
+  const [posts, setPosts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortOption, setSortOption] = useState("created_at");
 
   useEffect(() => {
     const fetchPostsData = async () => {
       try {
         const fetchedPosts = await fetchPosts();
-        setPosts(fetchedPosts || []); // Ensure fetchedPosts is an array
+        setPosts(fetchedPosts || []);
       } catch (error) {
-        console.error('Error fetching posts:', error);
-        setPosts([]); // Set posts to an empty array on error
+        console.error("Error fetching posts:", error);
+        setPosts([]);
       }
     };
     fetchPostsData();
   }, []);
 
-  // Function to handle search input
+  // Handle search input
   const handleSearch = (e) => {
     setSearchQuery(e.target.value);
   };
 
-  // Function to handle sorting change
+  // Handle sorting change
   const handleSortChange = (e) => {
     setSortOption(e.target.value);
   };
@@ -37,7 +37,7 @@ const HomePage = () => {
 
   // Sort posts based on the selected option (created_at or upvotes)
   const sortedPosts = [...filteredPosts].sort((a, b) => {
-    if (sortOption === 'upvotes') {
+    if (sortOption === "upvotes") {
       return b.upvotes - a.upvotes; // Sort by upvotes descending
     }
     return new Date(b.created_at) - new Date(a.created_at); // Sort by created_at descending
@@ -73,7 +73,8 @@ const HomePage = () => {
           {sortedPosts.map((post) => (
             <li key={post.id}>
               <Link to={`/post/${post.id}`}>
-                {post.title} - Upvotes: {post.upvotes} - Created at: {new Date(post.created_at).toLocaleString()}
+                {post.title} - Upvotes: {post.upvotes} - Created at:{" "}
+                {new Date(post.created_at).toLocaleString()}
               </Link>
             </li>
           ))}

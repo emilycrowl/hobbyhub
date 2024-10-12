@@ -10,22 +10,25 @@ import {
 } from "./PostService";
 
 const PostPage = () => {
-  const { id } = useParams(); // Get post ID from URL
-  const navigate = useNavigate(); // To programmatically navigate after delete
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [comments, setComments] = useState([]);
-  const [newComment, setNewComment] = useState(""); // To handle new comment input
-  const [isEditing, setIsEditing] = useState(false); // Toggle for editing
-  const [editedTitle, setEditedTitle] = useState(""); // For edited post title
-  const [editedContent, setEditedContent] = useState(post.content || "");
-  const [editedImage, setEditedImage] = useState(post.img || "");
+  const [newComment, setNewComment] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedTitle, setEditedTitle] = useState("");
+  const [editedContent, setEditedContent] = useState("");
+  const [editedImage, setEditedImage] = useState("");
 
   useEffect(() => {
     const fetchPostData = async () => {
       try {
         const fetchedPost = await fetchPostById(id);
         setPost(fetchedPost);
-        const fetchedComments = await fetchComments(id); // Fetch comments for the post
+        setEditedTitle(fetchedPost.title);
+        setEditedContent(fetchedPost.content);
+        setEditedImage(fetchedPost.img);
+        const fetchedComments = await fetchComments(id);
         setComments(fetchedComments || []);
       } catch (error) {
         console.error("Error fetching post:", error);
@@ -34,47 +37,56 @@ const PostPage = () => {
     fetchPostData();
   }, [id]);
 
-  // Function to handle comment submission
+  // Handle comment submission
   const handleCommentSubmit = async (e) => {
     e.preventDefault();
     if (newComment.trim() === "") return;
     try {
-      await addComment(id, newComment); // Add comment to the post
-      const updatedComments = await fetchComments(id); // Fetch updated comments
+      await addComment(id, newComment);
+      const updatedComments = await fetchComments(id);
       setComments(updatedComments);
-      setNewComment(""); // Clear input after submission
+      setNewComment("");
     } catch (error) {
       console.error("Error adding comment:", error);
     }
   };
 
-  // Function to handle post deletion
+  // Handle post deletion
   const handleDeletePost = async () => {
     try {
-      await deletePost(id); // Delete the post
-      navigate("/"); // Navigate back to home page
+      await deletePost(id);
+      navigate("/");
     } catch (error) {
       console.error("Error deleting post:", error);
     }
   };
 
-  // Function to handle post editing
+  // Handle post editing
   const handleEditPost = async () => {
-  try {
-    await updatePost(post.id, editedTitle, editedContent, editedImage); // Make sure your service supports these parameters
-    setIsEditing(false);
-    setPost({ ...post, title: editedTitle, content: editedContent, img: editedImage });
-  } catch (error) {
-    console.error('Error editing post:', error);
-  }
-};
+    try {
+      // Ensure the post is fully updated with new values before sending to the database
+      const updatedPost = {
+        title: editedTitle,
+        content: editedContent,
+        img: editedImage,
+      };
 
+      // Call updatePost with the correct parameters
+      await updatePost(post.id, updatedPost);
 
-  // Function to handle post upvoting
+      // Update local state to reflect the new post data
+      setIsEditing(false);
+      setPost({ ...post, ...updatedPost });
+    } catch (error) {
+      console.error("Error editing post:", error);
+    }
+  };
+
+  // Handle post upvoting
   const handleUpvote = async () => {
     try {
-      const updatedPost = await upvotePost(id); // Increment upvotes
-      setPost({ ...post, upvotes: updatedPost.upvotes }); // Update post state with new upvote count
+      const updatedPost = await upvotePost(id);
+      setPost({ ...post, upvotes: updatedPost.upvotes });
     } catch (error) {
       console.error("Error upvoting post:", error);
     }
@@ -112,6 +124,7 @@ const PostPage = () => {
               <p>{post.content}</p>
               {post.img && <img src={post.img} alt={post.title} />}
               <p>Upvotes: {post.upvotes}</p>
+              <button onClick={handleUpvote}>Upvote</button>{" "}
               <button onClick={() => setIsEditing(true)}>Edit</button>
               <button onClick={handleDeletePost}>Delete</button>
             </div>
